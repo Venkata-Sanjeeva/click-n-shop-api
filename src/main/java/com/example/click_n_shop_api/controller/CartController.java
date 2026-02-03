@@ -33,7 +33,7 @@ public class CartController {
     	return ResponseEntity.status(HttpStatus.OK).body(savedCart);
     }
     
-    @GetMapping("/user/{uniqueId}")
+    @GetMapping("/fetch/user/{uniqueId}")
     public ResponseEntity<?> getCartByUserUniqueId(@PathVariable String uniqueId) {
     	Cart cart = null;
     	try {
