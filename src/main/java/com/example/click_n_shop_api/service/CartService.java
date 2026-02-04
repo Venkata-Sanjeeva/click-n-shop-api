@@ -68,4 +68,19 @@ public class CartService {
     	
     	return cartRepo.findByUserId(user.getId()).orElse(null);
     }
+    
+    public Cart deleteCartItemByProductId(String userUniqueId, String productId) throws UserNotFoundException {
+    	User user = userService.fetchUserByUniqueId(userUniqueId);
+    	
+    	if(user == null) {
+    		throw new UserNotFoundException("User not found with ID: " + userUniqueId);
+    	}
+    	
+    	Cart cart = user.getCart();
+    	CartItem cartItem = cartItemRepo.findByProductIdAndCartId(productId, cart.getId()).orElse(null);
+    	
+    	cartItemRepo.delete(cartItem);
+    	
+    	return cart;
+    }
 }
