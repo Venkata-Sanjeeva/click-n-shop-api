@@ -1,5 +1,6 @@
 package com.example.click_n_shop_api.service;
 
+import com.example.click_n_shop_api.exceptions.UserExistsException;
 import com.example.click_n_shop_api.exceptions.UserNotFoundException;
 import com.example.click_n_shop_api.model.Cart;
 import com.example.click_n_shop_api.model.Order;
@@ -27,6 +28,73 @@ public class UserService {
     @Autowired
     private UserRepository userRepo;
 
+    private UpdatedProfileResponse getUpdatedProfileDetails(UpdateProfileDetailsRequest userProfileDetails, String userUniqueId) {
+        String email = userProfileDetails.getEmail();
+        String fullName = userProfileDetails.getFullName();
+        String phone = userProfileDetails.getPhone();
+        String address = userProfileDetails.getAddress();
+        String country = userProfileDetails.getCountry();
+        String state = userProfileDetails.getState();
+        String city = userProfileDetails.getCity();
+        String zipcode = userProfileDetails.getZipcode();
+        String gender = userProfileDetails.getGender();
+        Date dob = userProfileDetails.getDob();
+
+        UpdatedProfileResponse user = new UpdatedProfileResponse();
+        user.setUniqueId(userUniqueId);
+
+        if(email == null || email.isEmpty()) {
+            email = "";
+        }
+        user.setEmail(email);
+
+        if(fullName == null || fullName.isEmpty()) {
+            fullName = "";
+        }
+        user.setFullName(fullName);
+
+        if(phone == null || phone.isEmpty()) {
+            phone = "";
+        }
+        user.setPhone(phone);
+
+        if(address == null || address.isEmpty()) {
+            address = "";
+        }
+        user.setAddress(address);
+
+        if(country == null || country.isEmpty()) {
+            country = "";
+        }
+        user.setCountry(country);
+
+        if(state == null || state.isEmpty()) {
+            state = "";
+        }
+        user.setState(state);
+
+        if(city == null || city.isEmpty()) {
+            city = "";
+        }
+        user.setCity(city);
+
+        if(zipcode == null || zipcode.isEmpty()) {
+            zipcode = "";
+        }
+        user.setZipcode(zipcode);
+
+        if(gender == null || gender.isEmpty()) {
+            gender = "";
+        }
+        user.setGender(gender);
+
+        if(dob != null) {
+            user.setDob(dob);
+        }
+
+        return user;
+    }
+
     private String generateUserId() {
         return "USER-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
@@ -38,7 +106,7 @@ public class UserService {
                 (userRepo.findByUsername(registerReq.getUsername())).isPresent() ||
                 (userRepo.existsByEmail(registerReq.getEmail()))
         ) {
-            return null;
+            throw new UserExistsException("User with Email: " + registerReq.getEmail() + " already exists!!!");
         }
 
         User newUser = new User();
@@ -71,7 +139,15 @@ public class UserService {
     	}
         return user;
     }
-    
+
+    public UpdatedProfileResponse fetchUserProfileDetailsByUniqueId(String userUniqueId) {
+        User user = userRepo.findByUniqueId(userUniqueId).orElse(null);
+        if(user == null) {
+            throw new UserNotFoundException("User with ID: " + userUniqueId + " not found!");
+        }
+        return getUpdatedProfileDetails(new UpdateProfileDetailsRequest(user), userUniqueId);
+    }
+
     public UpdatedProfileResponse updateUserProfile(UpdateProfileDetailsRequest userProfileDetails, String userUniqueId) {
     	
     	User user = userRepo.findByUniqueId(userUniqueId).orElse(null);
@@ -79,52 +155,30 @@ public class UserService {
     	if(user == null) {
     		throw new UserNotFoundException("User not found with ID: " + userUniqueId);
     	}
+
+        UpdatedProfileResponse updatedResObj = getUpdatedProfileDetails(userProfileDetails, userUniqueId);
+
+        user.setEmail(updatedResObj.getEmail());
+        user.setFullName(updatedResObj.getFullName());
+        user.setPhone(updatedResObj.getPhone());
+        user.setGender(updatedResObj.getGender());
+        user.setDob(updatedResObj.getDob());
+        user.setAddress(updatedResObj.getAddress());
+        user.setCountry(updatedResObj.getCountry());
+        user.setState(updatedResObj.getState());
+        user.setCity(updatedResObj.getCity());
+        user.setZipcode(updatedResObj.getZipcode());
+
+    	userRepo.save(user);
     	
-    	String fullName = userProfileDetails.getFullName();
-    	String phone = userProfileDetails.getPhone();
-    	String address = userProfileDetails.getAddress();
-    	String city = userProfileDetails.getCity();
-    	String zipcode = userProfileDetails.getZipcode();
-    	String gender = userProfileDetails.getGender();
-    	Date dob = userProfileDetails.getDob();
-    			
-    	if(fullName == null || fullName.isEmpty()) {
-    		fullName = "";
-    	}
-    	
-    	if(phone == null || phone.isEmpty()) {
-    		phone = "";
-    	}
-    	
-    	if(address == null || address.isEmpty()) {
-    		address = "";
-    	}
-    	
-    	if(city == null || city.isEmpty()) {
-    		city = "";
-    	}
-    	
-    	if(zipcode == null || zipcode.isEmpty()) {
-    		zipcode = "";
-    	}
-    	
-    	if(gender == null || gender.isEmpty()) {
-    		gender = "";
-    	}
-    	
-    	if(dob != null) {
-    		// 
-    	}
-    	
-    	
-    	return new UpdatedProfileResponse(gender, fullName, fullName, phone, address, city, city, zipcode, zipcode, gender, dob);
+    	return updatedResObj;
     }
 
     public User resetPassword(ResetPasswordRequest resetPasswordReq) {
         User user = userRepo.findByUniqueId(resetPasswordReq.getUserUniqueId()).orElse(null);
 
         if(user == null) {
-            return null;
+            throw new UserNotFoundException("User not found with ID: " + resetPasswordReq.getUserUniqueId());
         }
 
         user.setPassword(resetPasswordReq.getPassword());

@@ -26,27 +26,20 @@ public class WishListService {
 	
 	public WishList saveWishListProduct(AddWishListRequest addWishListReq) {
 		User user = userService.fetchUserByUniqueId(addWishListReq.getUserUniqueId());
-		
-		try {
-			if(user == null) {
-				throw new UserNotFoundException("User not found with ID: " + addWishListReq.getUserUniqueId());
-			}
-			
-			WishList wishList = user.getWishList();
-			
-			WishListProduct wishListProd = addWishListReq.getWishListProduct();
-			
-			wishListProd.setWishList(wishList);
 
-			wishListProdRepo.save(wishListProd);
-			
-			return wishList;
-			
-		} catch (Exception e) {
-			// TODO: handle exception
-			System.out.println(e.getMessage());
+		if(user == null) {
+			throw new UserNotFoundException("User not found with ID: " + addWishListReq.getUserUniqueId());
 		}
-		return null;
+
+		WishList wishList = user.getWishList();
+
+		WishListProduct wishListProd = addWishListReq.getWishListProduct();
+
+		wishListProd.setWishList(wishList);
+
+		wishListProdRepo.save(wishListProd);
+
+		return wishList;
 	}
 
 	public WishList fetchWishListByUserId(String userUniqueId) throws UserNotFoundException{

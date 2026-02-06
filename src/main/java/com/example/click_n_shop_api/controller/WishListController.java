@@ -20,7 +20,12 @@ public class WishListController {
 	
 	@PostMapping("/save")
 	public ResponseEntity<?> saveWishListProduct(@RequestBody AddWishListRequest addWishListReq) {
-		WishList wishList = wishListService.saveWishListProduct(addWishListReq);
+		try {
+
+        } catch(UserNotFoundException exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User with ID: " + addWishListReq.getUserUniqueId() + " not found!");
+        }
+        WishList wishList = wishListService.saveWishListProduct(addWishListReq);
 		if(wishList == null) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error Saving WishList");
 		}
