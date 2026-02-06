@@ -2,6 +2,7 @@ package com.example.click_n_shop_api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,6 +22,7 @@ public class WishListProduct {
 	@JsonIgnore
 	private WishList wishList;
 	
+	@Column(unique = true)
     private String productId;
     private Double price;
 }

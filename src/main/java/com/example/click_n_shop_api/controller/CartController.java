@@ -1,5 +1,6 @@
 package com.example.click_n_shop_api.controller;
 
+import com.example.click_n_shop_api.exceptions.CartItemAlreadyFoundException;
 import com.example.click_n_shop_api.exceptions.UserNotFoundException;
 import com.example.click_n_shop_api.model.Cart;
 import com.example.click_n_shop_api.model.WishList;
@@ -28,11 +29,16 @@ public class CartController {
 
     @PostMapping("/save")
     public ResponseEntity<?> saveCartItem(@RequestBody AddCartRequest cartReq) {
-    	Cart savedCart = cartService.saveCart(cartReq);
-    	if(savedCart == null) {
-    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error Saving Cart...");
-    	}
-    	return ResponseEntity.status(HttpStatus.OK).body(savedCart);
+    	try {
+    		Cart savedCart = cartService.saveCart(cartReq);
+        	
+        	return ResponseEntity.status(HttpStatus.OK).body(savedCart);
+		} catch (CartItemAlreadyFoundException e) {
+			// TODO: handle exception
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error Saving Cart..." + e.getMessage());
+		}
     }
     
     @GetMapping("/fetch/user/{uniqueId}")

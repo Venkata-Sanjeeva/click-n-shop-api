@@ -2,6 +2,8 @@ package com.example.click_n_shop_api.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -17,6 +19,8 @@ public class Cart {
     @OneToOne
     @JoinColumn(name = "user_id")
     @JsonIgnore
+    @ToString.Exclude             // Breaks the toString loop
+    @EqualsAndHashCode.Exclude    // Breaks the hashCode loop
     private User user;
 
     @OneToMany(mappedBy = "cart")

@@ -1,5 +1,6 @@
 package com.example.click_n_shop_api.service;
 
+import com.example.click_n_shop_api.exceptions.CartItemAlreadyFoundException;
 import com.example.click_n_shop_api.exceptions.UserNotFoundException;
 import com.example.click_n_shop_api.model.Cart;
 import com.example.click_n_shop_api.model.CartItem;
@@ -10,6 +11,8 @@ import com.example.click_n_shop_api.request.AddCartRequest;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.management.RuntimeErrorException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,26 +40,24 @@ public class CartService {
     public Cart saveCart(AddCartRequest addCartReq) {
     	User user = userService.fetchUserByUniqueId(addCartReq.getUserUniqueId());
     	
-    	try {
-			if(user == null) {
-				throw new UserNotFoundException("User not found with ID: " + addCartReq.getUserUniqueId());
-			}
-			
-			Cart userCart = user.getCart();
-			
-			CartItem cartItem = addCartReq.getCartItem();
-			
-			cartItem.setCart(userCart);
-			
-			cartItemRepo.save(cartItem);
-			
-			return userCart;
-			
-		} catch (Exception e) {
-			// TODO: handle exception
-			System.out.println(e.getMessage());
+    	if(user == null) {
+			throw new UserNotFoundException("User not found with ID: " + addCartReq.getUserUniqueId());
 		}
-		return null;
+		
+		Cart userCart = user.getCart();
+		
+		CartItem cartItem = addCartReq.getCartItem();
+		
+		if(cartItemRepo.findByProductIdAndCartId(cartItem.getProductId(), userCart.getId()).orElse(null) != null) {
+			throw new CartItemAlreadyFoundException("Cart Item Already Found!");
+		}
+		
+		
+		cartItem.setCart(userCart);
+		
+		cartItemRepo.save(cartItem);
+		
+		return userCart;
     }
 
     public Cart fetchCartByUserUniqueId(String userUniqueId) throws UserNotFoundException {

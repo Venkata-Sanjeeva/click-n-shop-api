@@ -1,5 +1,6 @@
 package com.example.click_n_shop_api.service;
 
+import com.example.click_n_shop_api.exceptions.UserNotFoundException;
 import com.example.click_n_shop_api.model.Cart;
 import com.example.click_n_shop_api.model.Order;
 import com.example.click_n_shop_api.model.User;
@@ -7,11 +8,15 @@ import com.example.click_n_shop_api.model.WishList;
 import com.example.click_n_shop_api.repository.UserRepository;
 import com.example.click_n_shop_api.request.RegisterRequest;
 import com.example.click_n_shop_api.request.ResetPasswordRequest;
+import com.example.click_n_shop_api.request.UpdateProfileDetailsRequest;
 import com.example.click_n_shop_api.response.GetAllUsersResponse;
+import com.example.click_n_shop_api.response.UpdatedProfileResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -59,7 +64,60 @@ public class UserService {
     }
 
     public User fetchUserByUniqueId(String uniqueId) {
-        return userRepo.findByUniqueId(uniqueId).orElse(null);
+    	User user = userRepo.findByUniqueId(uniqueId).orElse(null);
+    	
+    	if(user == null) {
+    		throw new UserNotFoundException("User not found with ID: " + uniqueId);
+    	}
+        return user;
+    }
+    
+    public UpdatedProfileResponse updateUserProfile(UpdateProfileDetailsRequest userProfileDetails, String userUniqueId) {
+    	
+    	User user = userRepo.findByUniqueId(userUniqueId).orElse(null);
+    	
+    	if(user == null) {
+    		throw new UserNotFoundException("User not found with ID: " + userUniqueId);
+    	}
+    	
+    	String fullName = userProfileDetails.getFullName();
+    	String phone = userProfileDetails.getPhone();
+    	String address = userProfileDetails.getAddress();
+    	String city = userProfileDetails.getCity();
+    	String zipcode = userProfileDetails.getZipcode();
+    	String gender = userProfileDetails.getGender();
+    	Date dob = userProfileDetails.getDob();
+    			
+    	if(fullName == null || fullName.isEmpty()) {
+    		fullName = "";
+    	}
+    	
+    	if(phone == null || phone.isEmpty()) {
+    		phone = "";
+    	}
+    	
+    	if(address == null || address.isEmpty()) {
+    		address = "";
+    	}
+    	
+    	if(city == null || city.isEmpty()) {
+    		city = "";
+    	}
+    	
+    	if(zipcode == null || zipcode.isEmpty()) {
+    		zipcode = "";
+    	}
+    	
+    	if(gender == null || gender.isEmpty()) {
+    		gender = "";
+    	}
+    	
+    	if(dob != null) {
+    		// 
+    	}
+    	
+    	
+    	return new UpdatedProfileResponse(gender, fullName, fullName, phone, address, city, city, zipcode, zipcode, gender, dob);
     }
 
     public User resetPassword(ResetPasswordRequest resetPasswordReq) {

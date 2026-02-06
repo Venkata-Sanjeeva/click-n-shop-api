@@ -1,8 +1,10 @@
 package com.example.click_n_shop_api.controller;
 
+import com.example.click_n_shop_api.exceptions.UserNotFoundException;
 import com.example.click_n_shop_api.model.User;
 import com.example.click_n_shop_api.request.RegisterRequest;
 import com.example.click_n_shop_api.request.ResetPasswordRequest;
+import com.example.click_n_shop_api.request.UpdateProfileDetailsRequest;
 import com.example.click_n_shop_api.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,14 +32,24 @@ public class UserController {
 
     @GetMapping("/fetch/{userUniqueId}")
     public ResponseEntity<?> getUserByUniqueId(@PathVariable String userUniqueId) {
-        User user = userService.fetchUserByUniqueId(userUniqueId);
-        if(user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with ID: " + userUniqueId + " not found!");
-        }
-        return ResponseEntity.ok(user);
+    	try {
+        	User user = userService.fetchUserByUniqueId(userUniqueId);
+            return ResponseEntity.ok(user);
+		} catch (UserNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with ID: " + userUniqueId + " not found!");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error getting user with the ID: " + userUniqueId);
+		}
+    }
+    
+    @PatchMapping("/update/profile-details/{userUniqueId}")
+    public ResponseEntity<?> updateUserProfileDetails(
+    		@RequestBody UpdateProfileDetailsRequest userProfileDetails,
+    		@PathVariable String userUniqueId) {
+    	return null;
     }
 
-    @PatchMapping("/resetPassword")
+    @PatchMapping("/update/resetPassword")
     public ResponseEntity<?> updateUserPassword(@RequestBody ResetPasswordRequest resetPasswordReq) {
         User user = userService.resetPassword(resetPasswordReq);
         if(user == null) {
