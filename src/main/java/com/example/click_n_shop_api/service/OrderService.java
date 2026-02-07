@@ -6,6 +6,7 @@ import com.example.click_n_shop_api.repository.OrderRepository;
 import com.example.click_n_shop_api.repository.ProductOrderDetailsRepository;
 import com.example.click_n_shop_api.request.OrdersRequest;
 import com.example.click_n_shop_api.repository.CartRepository;
+import com.example.click_n_shop_api.response.UsersOrdersResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,9 @@ public class OrderService {
         }
         
         Order order = new Order();
-        
+
+        order.setOrderUniqueId(ordersReq.getOrderUniqueId());
+
         // 3. Set Dates
         LocalDate localDate = LocalDate.now();
         order.setOrderDate(Date.valueOf(localDate));
@@ -54,6 +57,18 @@ public class OrderService {
 
         // 5. Save (Cascades automatically to ProductOrderDetails)
         return orderRepository.save(order);
+    }
+
+    public UsersOrdersResponse fetchOrderByUserUniqueId(String userUniqueId) {
+        User user = userService.fetchUserByUniqueId(userUniqueId);
+
+        if(user == null) {
+            throw new UserNotFoundException("User with ID: " + userUniqueId + " not found!");
+        }
+
+        List<Order> ordersList = orderRepository.findByUserId(user.getId());
+
+        return new UsersOrdersResponse(ordersList);
     }
 
     private Double calculateTotal(List<ProductOrderDetails> items) {

@@ -8,4 +8,5 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     // Find all orders that are due on a specific date
     List<Order> findByDueDate(String dueDate);
+    List<Order> findByUserId(Long userId);
 }

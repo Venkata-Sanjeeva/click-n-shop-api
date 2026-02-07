@@ -10,6 +10,7 @@ import lombok.Data;
 public class OrdersRequest {
 
 	private String userUniqueId;
+	private String orderUniqueId;
 	
 	private List<ProductOrderDetails> listOfProducts;
 }
